@@ -6,7 +6,7 @@ import { Public } from '../common/decorators/public.decorator';
 
 @Injectable()
 export class UsersService {
-    constructor(private prisma: PrismaService) { }
+    constructor(private readonly prisma: PrismaService) { }
 
 
     @Public()

@@ -1,11 +1,11 @@
 /* eslint-disable prettier/prettier */
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, NotFoundException } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from './dto/login';
 import { ConfigService } from '@nestjs/config';
-
+import { PrismaService } from '../prisma/prisma.service';
 
 export interface UserProps {
     id: string,
@@ -18,6 +18,7 @@ export interface UserProps {
 @Injectable()
 export class AuthService {
     constructor(
+        private readonly prisma: PrismaService,
         private readonly usersService: UsersService,
         private readonly jwtService: JwtService,
         private readonly configService: ConfigService,
@@ -49,5 +50,16 @@ export class AuthService {
         );
 
         return access_token;
+    }
+
+    async findMe(userId: string) {
+        console.log(userId)
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId }
+        });
+
+        if (!user) throw new NotFoundException('Conta não encontrada.');
+
+        return user;
     }
 }

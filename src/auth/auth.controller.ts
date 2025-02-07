@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
-import { Public } from '../common/decorators/public.decorator';
+import { Body, Controller, HttpCode, HttpStatus, Post, Get } from '@nestjs/common';
+import { GetCurrentUserId, Public } from '../common/decorators';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto';
 
@@ -16,5 +16,10 @@ export class AuthController {
             email: email.trim().toLowerCase(),
             password: password.trim(),
         });
+    }
+
+    @Get('/detail/me')
+    async findMe(@GetCurrentUserId() userId: string) {
+        return this.authService.findMe(userId);
     }
 }
