@@ -22,6 +22,12 @@ export class ActionsService {
         if (!Object.values(Category).includes(category)) {
             throw new BadRequestException(`Categoria inválida: ${category}. As opções válidas são: ${Object.values(Category).join(', ')}`);
         }
+        
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+        });
+
+        if (!user) throw new NotFoundException('Utilizador não encontrado.');
 
         const action = await this.prisma.action.create({
             data: {
