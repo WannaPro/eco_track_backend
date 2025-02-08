@@ -31,7 +31,7 @@ export class AuthService {
 
         if (user && (await bcrypt.compare(password, user.password))) {
             const access_token = await this.login(user);
-            return { access_token };
+            return { user, access_token };
         }
 
         throw new UnauthorizedException("Acesso negado.");
