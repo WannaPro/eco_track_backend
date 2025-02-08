@@ -55,7 +55,7 @@ export class ActionsService {
     }
 
     async findAll(userId: string): Promise<Action[]> {
-        
+
         const user = await this.prisma.user.findUnique({
             where: { id: userId },
         });
@@ -63,6 +63,17 @@ export class ActionsService {
         if (!user) throw new ForbiddenException('Acesso negado.');
 
         return this.prisma.action.findMany({ include: { user: true } });
+    }
+
+    async findMyActions(userId: string): Promise<Action[]> {
+
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+        });
+
+        if (!user) throw new ForbiddenException('Acesso negado.');
+
+        return this.prisma.action.findMany({ where: { userId }, include: { user: true } });
     }
 
     async findOne(id: string): Promise<Action> {

@@ -26,7 +26,16 @@ export class ActionsController {
         });
     }
 
-    @Get()
+    @Get("my")
+    @HttpCode(HttpStatus.OK)
+    @ApiBearerAuth() // Garante que o Swagger aceite o token JWT
+    @ApiOperation({ summary: 'Listar todas as ações sustentáveis do usuário' })
+    @ApiResponse({ status: 200, description: 'Lista de ações do usuário retornada com sucesso.' })
+    async findMyActions(@GetCurrentUserId() userId: string) {
+        return this.actionsService.findMyActions(userId);
+    }
+
+    @Get("")
     @HttpCode(HttpStatus.OK)
     @ApiBearerAuth() // Garante que o Swagger aceite o token JWT
     @ApiOperation({ summary: 'Listar todas as ações sustentáveis' })
