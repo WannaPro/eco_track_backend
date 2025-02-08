@@ -53,7 +53,7 @@ export class AuthService {
     }
 
     async findMe(userId: string) {
-        console.log(userId)
+
         const user = await this.prisma.user.findUnique({
             where: { id: userId }
         });
