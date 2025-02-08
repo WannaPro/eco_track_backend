@@ -1,7 +1,8 @@
 /* eslint-disable prettier/prettier */
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Action } from '@prisma/client';
+import calculatePoints from 'src/functions/calculatePoints';
 
 
 // Definição do Enum
@@ -16,18 +17,20 @@ enum Category {
 export class ActionsService {
     constructor(private prisma: PrismaService) { }
 
-    async create(userId: string, { title, description, category, points }): Promise<Action> {
+    async create(userId: string, { title, description, category, quantity }): Promise<Action> {
 
         // Verifica se a categoria é válida
         if (!Object.values(Category).includes(category)) {
             throw new BadRequestException(`Categoria inválida: ${category}. As opções válidas são: ${Object.values(Category).join(', ')}`);
         }
-        
+
         const user = await this.prisma.user.findUnique({
             where: { id: userId },
         });
 
-        if (!user) throw new NotFoundException('Utilizador não encontrado.');
+        if (!user) throw new ForbiddenException('Utilizador não encontrado.');
+
+        const points = calculatePoints(category, quantity); // Calcula os pontos
 
         const action = await this.prisma.action.create({
             data: {
@@ -51,7 +54,14 @@ export class ActionsService {
         return action;
     }
 
-    async findAll(): Promise<Action[]> {
+    async findAll(userId: string): Promise<Action[]> {
+        
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+        });
+
+        if (!user) throw new ForbiddenException('Acesso negado.');
+
         return this.prisma.action.findMany({ include: { user: true } });
     }
 
@@ -61,17 +71,37 @@ export class ActionsService {
         return action;
     }
 
-    async updateOne(id: string, userId: string, data: Partial<Action>): Promise<Action> {
+    async updateOne(userId: string, { title, description, category, quantity }, id: string): Promise<Action> {
+
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+        });
+
+        if (!user) throw new ForbiddenException('Utilizador não encontrado.');
+
         const action = await this.prisma.action.findUnique({ where: { id } });
         if (!action || action.userId !== userId) throw new NotFoundException('Ação não encontrada ou não pertence ao usuário');
 
+        const points = calculatePoints(category, quantity); // Calcula os pontos
+
         return this.prisma.action.update({
             where: { id },
-            data,
+            data: {
+                title,
+                description,
+                category,
+                points,
+            },
         });
     }
 
     async deleteOne(id: string, userId: string): Promise<void> {
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+        });
+
+        if (!user) throw new ForbiddenException('Utilizador não encontrado.');
+
         const action = await this.prisma.action.findUnique({ where: { id } });
         if (!action || action.userId !== userId) throw new NotFoundException('Ação não encontrada ou não pertence ao usuário');
 

@@ -3,7 +3,7 @@
 import { IsNotEmpty, IsString, IsEnum, IsInt, Min } from "class-validator";
 import { Category } from '@prisma/client';
 import { ApiProperty } from '@nestjs/swagger';
-export class CreateDto {
+export class UpdateActionDto {
 
 
     @ApiProperty({ example: 'Economizei 10 litros de água' })

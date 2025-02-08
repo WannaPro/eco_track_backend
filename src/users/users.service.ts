@@ -1,8 +1,9 @@
 /* eslint-disable prettier/prettier */
-import { Injectable, ConflictException } from '@nestjs/common';
+import { Injectable, ConflictException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { Public } from '../common/decorators/public.decorator';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class UsersService {
@@ -33,7 +34,14 @@ export class UsersService {
         return this.prisma.user.findUnique({ where: { email } });
     }
 
-    async findAll() {
+    async findAll(userId: string): Promise<User[]> {
+
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+        });
+
+        if (!user) throw new ForbiddenException('Acesso negado.');
+
         return this.prisma.user.findMany();
     }
 }
